@@ -14,6 +14,12 @@ public partial class AddConnectionViewModel : ObservableObject
     private readonly ConnectionService _connectionService;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPasswordAuth))]
+    private AuthType selectedAuthType = AuthType.Password;
+    
+    public bool IsPasswordAuth => SelectedAuthType == AuthType.Password;
+
+    [ObservableProperty]
     private string url = "https://";
 
     [ObservableProperty]
@@ -45,12 +51,11 @@ public partial class AddConnectionViewModel : ObservableObject
         StatusMessage = "Connecting...";
         try
         {
-            // Attempt to authenticate directly
-            // IsValidConnection is sometimes too strict (e.g. failing on 401 for /version)
-            await _proxmoxService.AuthenticateAsync(Url, Username, Password, Realm);
+            // Authenticate with selected type
+            await _proxmoxService.AuthenticateAsync(Url, Username, Password, Realm, SelectedAuthType);
             
             await _connectionService.SaveConnectionAsync(Url);
-            _authService.SaveCredentials(Url, Username, Password, Realm);
+            _authService.SaveCredentials(Url, Username, Password, Realm, SelectedAuthType);
             
             StatusMessage = "Success!";
             await Task.Delay(500);
@@ -58,7 +63,7 @@ public partial class AddConnectionViewModel : ObservableObject
         }
         catch (HttpRequestException ex)
         {
-            StatusMessage = $"Connection Failed: {ex.Message}";
+            StatusMessage = $"Http Error: {ex.Message} (Status: {ex.StatusCode})";
         }
         catch (Exception ex)
         {

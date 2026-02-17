@@ -14,12 +14,13 @@ public class AuthService : IAuthService
         return true; 
     }
 
-    public void SaveCredentials(string url, string username, string password, string realm)
+    public void SaveCredentials(string url, string username, string password, string realm, AuthType authType)
     {
         using var cred = new Credential
         {
             Target = $"ProxmoxManager:{url}",
-            Username = $"{username}|{realm}",
+            // Store metadata in Username field: "Type|Username|Realm"
+            Username = $"{authType}|{username}|{realm}",
             Password = password,
             Type = CredentialType.Generic,
             PersistanceType = PersistanceType.LocalComputer
@@ -27,15 +28,29 @@ public class AuthService : IAuthService
         cred.Save();
     }
 
-    public (string Username, string Password, string Realm)? GetCredentials(string url)
+    public (string Username, string Password, string Realm, AuthType Type)? GetCredentials(string url)
     {
         using var cred = new Credential { Target = $"ProxmoxManager:{url}" };
         if (cred.Load())
         {
             var parts = cred.Username.Split('|');
-            var user = parts[0];
-            var realm = parts.Length > 1 ? parts[1] : "pam";
-            return (user, cred.Password, realm);
+            
+            // Legacy Format: "User|Realm" (Length 2) -> Assume Password
+            if (parts.Length == 2)
+            {
+                return (parts[0], cred.Password, parts[1], AuthType.Password);
+            }
+            // New Format: "Type|User|Realm" (Length 3)
+            else if (parts.Length == 3)
+            {
+                 if (Enum.TryParse<AuthType>(parts[0], out var type))
+                 {
+                     return (parts[1], cred.Password, parts[2], type);
+                 }
+            }
+            
+            // Fallback
+            return (parts[0], cred.Password, "pam", AuthType.Password);
         }
         return null;
     }

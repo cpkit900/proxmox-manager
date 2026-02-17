@@ -5,7 +5,7 @@ namespace ProxmoxManager.Services;
 
 public interface IProxmoxService
 {
-    Task<ProxmoxAuthResult> AuthenticateAsync(string url, string username, string password, string realm);
+    Task<ProxmoxAuthResult> AuthenticateAsync(string url, string username, string password, string realm, AuthType type = AuthType.Password);
     Task<List<string>> GetNodesAsync(string url, ProxmoxAuthResult auth);
     Task<List<Models.ProxmoxVm>> GetVmsAsync(string url, string node, ProxmoxAuthResult auth);
     Task<List<Models.ProxmoxCt>> GetCtsAsync(string url, string node, ProxmoxAuthResult auth);

@@ -19,9 +19,43 @@ public class ProxmoxService : IProxmoxService
         // Note: In production, this should be configurable or handled more securely
     }
 
-    public async Task<ProxmoxAuthResult> AuthenticateAsync(string url, string username, string password, string realm)
+    private void SetHeaders(HttpRequestMessage request, ProxmoxAuthResult auth)
+    {
+        if (auth.Type == AuthType.ApiToken)
+        {
+            // PVEAPIToken=USER@REALM!TOKENID=UUID
+            // Use TryAddWithoutValidation to bypass strict format checks for custom schemes
+            request.Headers.TryAddWithoutValidation("Authorization", $"PVEAPIToken={auth.ApiToken}");
+        }
+        else
+        {
+            request.Headers.Add("CSRFPreventionToken", auth.CSRFPreventionToken);
+            request.Headers.Add("Cookie", $"PVEAuthCookie={auth.Ticket}");
+        }
+    }
+
+    public async Task<ProxmoxAuthResult> AuthenticateAsync(string url, string username, string password, string realm, AuthType type = AuthType.Password)
     {
         url = url.TrimEnd('/');
+        
+        if (type == AuthType.ApiToken)
+        {
+            // For API Token, we just validate connectivity. 
+            // Username = User@Realm!TokenId
+            // Password = Secret
+            var token = $"{username}={password}";
+            var auth = new ProxmoxAuthResult { ApiToken = token, Type = AuthType.ApiToken };
+            
+            // Validate
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{url}/api2/json/version");
+            SetHeaders(request, auth);
+            
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            
+            return auth;
+        }
+
         var loginUrl = $"{url}/api2/json/access/ticket";
         var content = new FormUrlEncodedContent(new[]
         {
@@ -29,24 +63,24 @@ public class ProxmoxService : IProxmoxService
             new KeyValuePair<string, string>("password", password)
         });
 
-        var response = await _httpClient.PostAsync(loginUrl, content);
-        response.EnsureSuccessStatusCode();
+        var loginResponse = await _httpClient.PostAsync(loginUrl, content);
+        loginResponse.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+        var json = await loginResponse.Content.ReadFromJsonAsync<JsonObject>();
         var data = json["data"];
         
         return new ProxmoxAuthResult
         {
             Ticket = data["ticket"].ToString(),
-            CSRFPreventionToken = data["CSRFPreventionToken"].ToString()
+            CSRFPreventionToken = data["CSRFPreventionToken"].ToString(),
+            Type = AuthType.Password
         };
     }
 
     public async Task<List<string>> GetNodesAsync(string url, ProxmoxAuthResult auth)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"{url.TrimEnd('/')}/api2/json/nodes");
-        request.Headers.Add("CSRFPreventionToken", auth.CSRFPreventionToken);
-        request.Headers.Add("Cookie", $"PVEAuthCookie={auth.Ticket}");
+        SetHeaders(request, auth);
 
         var response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
@@ -63,8 +97,7 @@ public class ProxmoxService : IProxmoxService
     public async Task<List<ProxmoxVm>> GetVmsAsync(string url, string node, ProxmoxAuthResult auth)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"{url.TrimEnd('/')}/api2/json/nodes/{node}/qemu");
-        request.Headers.Add("CSRFPreventionToken", auth.CSRFPreventionToken);
-        request.Headers.Add("Cookie", $"PVEAuthCookie={auth.Ticket}");
+        SetHeaders(request, auth);
 
         var response = await _httpClient.SendAsync(request);
         if (!response.IsSuccessStatusCode) return new List<ProxmoxVm>();
@@ -88,8 +121,7 @@ public class ProxmoxService : IProxmoxService
     public async Task<List<ProxmoxCt>> GetCtsAsync(string url, string node, ProxmoxAuthResult auth)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"{url.TrimEnd('/')}/api2/json/nodes/{node}/lxc");
-        request.Headers.Add("CSRFPreventionToken", auth.CSRFPreventionToken);
-        request.Headers.Add("Cookie", $"PVEAuthCookie={auth.Ticket}");
+        SetHeaders(request, auth);
 
         var response = await _httpClient.SendAsync(request);
         if (!response.IsSuccessStatusCode) return new List<ProxmoxCt>();
@@ -112,8 +144,7 @@ public class ProxmoxService : IProxmoxService
     public async Task<List<ProxmoxClusterResource>> GetClusterResourcesAsync(string url, ProxmoxAuthResult auth)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"{url.TrimEnd('/')}/api2/json/cluster/resources");
-        request.Headers.Add("CSRFPreventionToken", auth.CSRFPreventionToken);
-        request.Headers.Add("Cookie", $"PVEAuthCookie={auth.Ticket}");
+        SetHeaders(request, auth);
 
         var response = await _httpClient.SendAsync(request);
         if (!response.IsSuccessStatusCode) return new List<ProxmoxClusterResource>();
@@ -142,8 +173,7 @@ public class ProxmoxService : IProxmoxService
         try 
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"{url.TrimEnd('/')}/api2/json/nodes/{node}/qemu/{vmid}/agent/network-get-interfaces");
-            request.Headers.Add("CSRFPreventionToken", auth.CSRFPreventionToken);
-            request.Headers.Add("Cookie", $"PVEAuthCookie={auth.Ticket}");
+            SetHeaders(request, auth);
 
             var response = await _httpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode) return "No Agent";
@@ -186,8 +216,7 @@ public class ProxmoxService : IProxmoxService
         try 
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"{url.TrimEnd('/')}/api2/json/nodes/{node}/lxc/{vmid}/interfaces");
-            request.Headers.Add("CSRFPreventionToken", auth.CSRFPreventionToken);
-            request.Headers.Add("Cookie", $"PVEAuthCookie={auth.Ticket}");
+            SetHeaders(request, auth);
 
             var response = await _httpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode) return "No Data";

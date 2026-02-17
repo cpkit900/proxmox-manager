@@ -65,7 +65,8 @@ public partial class MainViewModel : ObservableObject
                          if (!Connections.Contains(conn)) Connections.Add(conn); 
                     });
 
-                    var auth = await _proxmoxService.AuthenticateAsync(url, creds.Value.Username, creds.Value.Password, creds.Value.Realm);
+                    // Use stored AuthType
+                    var auth = await _proxmoxService.AuthenticateAsync(url, creds.Value.Username, creds.Value.Password, creds.Value.Realm, creds.Value.Type);
                     conn.Status = "Connected";
                     
                     // 1. Fetch ALL resources (God Mode)

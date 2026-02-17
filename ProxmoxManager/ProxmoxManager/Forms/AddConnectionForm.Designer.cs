@@ -13,6 +13,8 @@ partial class AddConnectionForm
     private System.Windows.Forms.Label label2;
     private System.Windows.Forms.Label label3;
     private System.Windows.Forms.Label label4;
+    private System.Windows.Forms.ComboBox cmbAuthType;
+    private System.Windows.Forms.Label label5;
 
     protected override void Dispose(bool disposing)
     {
@@ -35,59 +37,61 @@ partial class AddConnectionForm
         this.label2 = new System.Windows.Forms.Label();
         this.label3 = new System.Windows.Forms.Label();
         this.label4 = new System.Windows.Forms.Label();
+        this.cmbAuthType = new System.Windows.Forms.ComboBox();
+        this.label5 = new System.Windows.Forms.Label();
         this.SuspendLayout();
         // 
         // txtUrl
         // 
-        this.txtUrl.Location = new System.Drawing.Point(100, 20);
+        this.txtUrl.Location = new System.Drawing.Point(100, 50);
         this.txtUrl.Name = "txtUrl";
         this.txtUrl.Size = new System.Drawing.Size(250, 23);
-        this.txtUrl.TabIndex = 0;
+        this.txtUrl.TabIndex = 1;
         // 
         // txtUsername
         // 
-        this.txtUsername.Location = new System.Drawing.Point(100, 50);
+        this.txtUsername.Location = new System.Drawing.Point(100, 80);
         this.txtUsername.Name = "txtUsername";
         this.txtUsername.Size = new System.Drawing.Size(250, 23);
-        this.txtUsername.TabIndex = 1;
+        this.txtUsername.TabIndex = 2;
         // 
         // txtPassword
         // 
-        this.txtPassword.Location = new System.Drawing.Point(100, 80);
+        this.txtPassword.Location = new System.Drawing.Point(100, 110);
         this.txtPassword.Name = "txtPassword";
         this.txtPassword.PasswordChar = '*';
         this.txtPassword.Size = new System.Drawing.Size(250, 23);
-        this.txtPassword.TabIndex = 2;
+        this.txtPassword.TabIndex = 3;
         // 
         // txtRealm
         // 
-        this.txtRealm.Location = new System.Drawing.Point(100, 110);
+        this.txtRealm.Location = new System.Drawing.Point(100, 140);
         this.txtRealm.Name = "txtRealm";
         this.txtRealm.Size = new System.Drawing.Size(250, 23);
-        this.txtRealm.TabIndex = 3;
+        this.txtRealm.TabIndex = 4;
         // 
         // btnSave
         // 
-        this.btnSave.Location = new System.Drawing.Point(100, 150);
+        this.btnSave.Location = new System.Drawing.Point(100, 180);
         this.btnSave.Name = "btnSave";
         this.btnSave.Size = new System.Drawing.Size(75, 23);
-        this.btnSave.TabIndex = 4;
+        this.btnSave.TabIndex = 5;
         this.btnSave.Text = "Save";
         this.btnSave.UseVisualStyleBackColor = true;
         // 
         // lblStatus
         // 
         this.lblStatus.AutoSize = true;
-        this.lblStatus.Location = new System.Drawing.Point(100, 180);
+        this.lblStatus.Location = new System.Drawing.Point(100, 210);
         this.lblStatus.Name = "lblStatus";
         this.lblStatus.Size = new System.Drawing.Size(39, 15);
-        this.lblStatus.TabIndex = 5;
+        this.lblStatus.TabIndex = 6;
         this.lblStatus.Text = "";
         // 
         // label1
         // 
         this.label1.AutoSize = true;
-        this.label1.Location = new System.Drawing.Point(20, 23);
+        this.label1.Location = new System.Drawing.Point(20, 53);
         this.label1.Name = "label1";
         this.label1.Size = new System.Drawing.Size(31, 15);
         this.label1.Text = "URL:";
@@ -95,7 +99,7 @@ partial class AddConnectionForm
         // label2
         // 
         this.label2.AutoSize = true;
-        this.label2.Location = new System.Drawing.Point(20, 53);
+        this.label2.Location = new System.Drawing.Point(20, 83);
         this.label2.Name = "label2";
         this.label2.Size = new System.Drawing.Size(63, 15);
         this.label2.Text = "Username:";
@@ -103,7 +107,7 @@ partial class AddConnectionForm
         // label3
         // 
         this.label3.AutoSize = true;
-        this.label3.Location = new System.Drawing.Point(20, 83);
+        this.label3.Location = new System.Drawing.Point(20, 113);
         this.label3.Name = "label3";
         this.label3.Size = new System.Drawing.Size(60, 15);
         this.label3.Text = "Password:";
@@ -111,16 +115,35 @@ partial class AddConnectionForm
         // label4
         // 
         this.label4.AutoSize = true;
-        this.label4.Location = new System.Drawing.Point(20, 113);
+        this.label4.Location = new System.Drawing.Point(20, 143);
         this.label4.Name = "label4";
         this.label4.Size = new System.Drawing.Size(42, 15);
         this.label4.Text = "Realm:";
+        //
+        // cmbAuthType
+        //
+        this.cmbAuthType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+        this.cmbAuthType.FormattingEnabled = true;
+        this.cmbAuthType.Location = new System.Drawing.Point(100, 20);
+        this.cmbAuthType.Name = "cmbAuthType";
+        this.cmbAuthType.Size = new System.Drawing.Size(150, 23);
+        this.cmbAuthType.TabIndex = 0;
+        //
+        // label5
+        //
+        this.label5.AutoSize = true;
+        this.label5.Location = new System.Drawing.Point(20, 23);
+        this.label5.Name = "label5";
+        this.label5.Size = new System.Drawing.Size(63, 15);
+        this.label5.Text = "Auth Type:";
         // 
         // AddConnectionForm
         // 
         this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(400, 220);
+        this.ClientSize = new System.Drawing.Size(400, 250);
+        this.Controls.Add(this.label5);
+        this.Controls.Add(this.cmbAuthType);
         this.Controls.Add(this.label4);
         this.Controls.Add(this.label3);
         this.Controls.Add(this.label2);
